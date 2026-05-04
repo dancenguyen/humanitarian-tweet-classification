@@ -14,13 +14,13 @@
 	- Trained on 850M English Tweets from 2012-2019
 	- Suitable for tweet classification tasks that requires deeper sentence comprehension 
 ## Exploratory data analysis:
-The data is already splitted into train-test-validation sets by the authors. Their intention was for everyone to use a consistent split, making comparison between models made by different people easier. The data split was well-stratified:![[HumAID tweet classification with BERTweet-1777726212548.webp]]
-
+The data is already splitted into train-test-validation sets by the authors. Their intention was for everyone to use a consistent split, making comparison between models made by different people easier. The data split was well-stratified:
+<img width="531" height="390" alt="HumAID tweet classification with BERTweet-1777726212548" src="https://github.com/user-attachments/assets/2cc96fc8-d6c0-4f9a-83f3-10837f61178a" />
 There are minimal features, of which most are within the text. Since the main objective is to use BERT which will only takes the raw text as input, no feature engineering was done.
 
 #### Data Imbalances:
 The split is well-stratified, but there is extreme class imbalance, with the most extreme one is the class "missing_or_found_people" with less than 1% of total observation. 
-![[HumAID tweet classification with BERTweet-1777725892738.webp]]
+<img width="989" height="490" alt="HumAID tweet classification with BERTweet-1777725892738" src="https://github.com/user-attachments/assets/4523f47c-328e-4f00-9e73-1b2f8d4a802b" />
 ## Data Preprocessing:
 - For SVM and LR:
 	- Stripping stopwords and punctuations and hashtag (but keep the hashtag word)
@@ -46,7 +46,7 @@ First, I will use two linear models as the baseline; their performance and their
 #### Error Analysis for SVM
 Since SVM has better overall performance, I did not do error analysis on Logistic Regression.
 **Confusion Matrix**
-![[HumAID tweet classification with BERTweet-1777727543912.webp]]
+<img width="1059" height="963" alt="HumAID tweet classification with BERTweet-1777727543912" src="https://github.com/user-attachments/assets/d66e13fb-0cf4-4f47-8da4-6e11c390011f" />
 - "**not_humanitarian**" is mainly misclassified as **"other_relevant_information"**
 - "**other_relevant_information**" is mainly misclassified as "**rescue_volunteering_or_donation_effort**", "**infrastructure_and_utility_damage**", and "**caution_and_advice**". 
 
@@ -70,22 +70,21 @@ Therefore, using BERT may improve performance due to its context-understanding a
 	- Warmup over 10% of steps to stabilise early training
 	- Batch size 32 for training efficiency on T4 GPU.
 #### Result: 
-
-![[HumAID tweet classification with BERTweet-1777730282065.webp]]
+<img width="584" height="455" alt="HumAID tweet classification with BERTweet-1777730282065" src="https://github.com/user-attachments/assets/6d0eb4fa-1fad-4af5-8e37-37c0622ba8e5" />
 The Macro F1 score plateaued after epoch 4 and ended up at **0.7559**
 This is significantly higher than the baseline model:
 - Logistic Regression F1: 0.6817
 - Support Vector Machine F1: 0.6927
 Looking at each class's f1-score, there are still some underperforming classes:
 - not_humanitarian F1: 0.41
+
 - other_relevant_information: 0.59
 - requests_or_urgent_need: 0.61
 - caution_and_advice: 0.70
 These are the same 4 classes that performed poorly in the baseline models but each class improved significantly. "not_humanitarian" F1 doubled from 0.21, while the others increased more modestly. "other_relevant_information" F1 only improved by 0.02, which may signify that this is a data problem rather than a modelling one.
 
-#### **Error Analysis**:
-![[HumAID tweet classification with BERTweet-1777731261954.webp|520x473]]
-The four classes with the most errors:
+#### **Error Analysis**:The four classes with the most errors:
+<img width="1059" height="963" alt="HumAID tweet classification with BERTweet-1777731261954" src="https://github.com/user-attachments/assets/4a45170b-1fad-4035-a2e7-d9200c78dcce" />
 1. **Not_humanitarian** is mostly misclassified as **other_relevant_information**.
 2. **Other_relevant_information** is misclassified as a range of different classes.
 3. **Requests_or_urgent_needs** is mostly misclassified as **rescue_volunteering_or_donation_effort**.
