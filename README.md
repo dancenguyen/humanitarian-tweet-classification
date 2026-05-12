@@ -30,10 +30,10 @@ The classes are well-stratified between the train, test, and validation set. How
 
 ## Data Preprocessing:
 - For SVM and LR:
-	- Stripping stopwords and punctuations. Negation words ("no", "not") are kept
+	- Stripping stopwords, punctuations, and hashtag symbol. Negation words ("no", "not") are kept
 	- TF-IDF with parameters: ngram_range= (1, 2), sublinear_tf= True
 - For BERTweet:
-	- The text are kept intact without preprocessing, keeping as much information as possible.
+	- The text are normalised using [BERTweet's normalizer](https://github.com/VinAIResearch/BERTweet#-normalize-raw-input-tweets). This makes the texts consistent with BERTweet's tokenization. These changes are purely syntactic and preserve all original meanings. For example: "cannot" into "can not", and "…" into "..."
 ## Evaluation metrics: 
 Macro f1-score was used as the main evaluation metrics as we have 10 different classes with extreme class imbalance. For underperforming classes, their individual f1-score are examined more closely. 
 ## Baseline modelling:
@@ -79,7 +79,11 @@ The TF-IDF vectorizer does not "understand" the entire sentence, it strips indiv
 	- Warmup over 10% of steps to stabilise early training
 	- Batch size 32 for training efficiency on T4 GPU.
 ### Result: 
-The Macro F1 score peaked at epoch 3: **0.76**. SVM's score was 0.69, so **BERTweet improved by around 10% compared to SVM.** This is a meaningful increase. **All individual f1-score of BERTweet is higher than SVM's** as can be seen from the figure below: 
+The Macro F1 score peaked at epoch 4: **0.7636**. SVM's score was 0.69, so **BERTweet improved by 10% compared to SVM.** 
+
+*Insert graph comparing the F1 Score*
+
+Furthermore, **All individual f1-score of BERTweet is higher than SVM's** as can be seen from the figure below: 
 
 <img width="785" height="490" alt="download" src="https://github.com/user-attachments/assets/f2ee0c9e-115e-4852-8de4-03a09fc4dba4" />
 
@@ -88,7 +92,7 @@ The Macro F1 score peaked at epoch 3: **0.76**. SVM's score was 0.69, so **BERTw
 3. **"Requests_or_urgent_needs", and "Caution_and_advice"** improved by around 15%
 4. **"Other_relevant_information"** improved by only 0.02 point, signifying a data problem rather than a modelling problem: this class is too generic and cannot be meaningfully separated from other classes. 
 
-### **Error Analysis**:The four classes with the most errors:
+### **Error Analysis**:  Four classes with the most errors:
 
 <img width="1059" height="963" alt="download" src="https://github.com/user-attachments/assets/d3ef1cb4-0487-4500-b058-1440cb73dd6e" />
 
@@ -102,3 +106,9 @@ Interpretation of these patterns:
 - The misclassification of **other_relevant_information** is the easiest to explain. As a broad catch-all category, it lacks a clearly defined semantic boundary and may contain highly heterogeneous content, the model struggles to learn consistent patterns.
 - The confusion between **not_humanitarian** and **other_relevant_information**, as well as between **caution_and_advice** and **other_relevant_information**, may also stem from the ambiguous nature of the catch-all category. Tweets that do not strongly express a distinctive humanitarian signal may be absorbed into other_relevant_information, even when they belong to more specific categories.
 - The confusion between **requests_or_urgent_needs** and **rescue_volunteering_or_donation_effort** is likely due to semantic overlap between the two classes. Discussions of urgent needs are often accompanied by references to rescue activities, volunteering, or donation efforts, making the boundary between these categories less distinct.
+
+### Flagging low-confidence predictions for human review:
+
+No model perfectly predict the unknown, especially for tweets that are not even clear to human readers; therefore, flagging low-confidence predictions for human reviewers is an important step in correcting the model's behaviour. Since for each observation, BERT-type models output real logits - probabilities of the tweet being in each classes. The model then simply choose the class with the highest probability as the label for that tweet. These probabilities can be interpreted as the "confidence" of BERTweet in its prediction, for example:
+	- If a tweet has 70% of being in class 1 and 20% of being in class 2. BERTweet will label it as class 1, with relatively large confidence.
+	- If a tweet has 33% of being in class 1 and 32% of being in class 2. BERTweet will still label it as class 1 since 33>32. However, this is a low-confidence prediction. The tweet  
