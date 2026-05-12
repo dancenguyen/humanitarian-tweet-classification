@@ -109,6 +109,17 @@ Interpretation of these patterns:
 
 ### Flagging low-confidence predictions for human review:
 
-No model perfectly predict the unknown, especially for tweets that are not even clear to human readers; therefore, flagging low-confidence predictions for human reviewers is an important step in correcting the model's behaviour. Since for each observation, BERT-type models output real logits - probabilities of the tweet being in each classes. The model then simply choose the class with the highest probability as the label for that tweet. These probabilities can be interpreted as the "confidence" of BERTweet in its prediction, for example:
-	- If a tweet has 70% of being in class 1 and 20% of being in class 2. BERTweet will label it as class 1, with relatively large confidence.
-	- If a tweet has 33% of being in class 1 and 32% of being in class 2. BERTweet will still label it as class 1 since 33>32. However, this is a low-confidence prediction. The tweet  
+No model perfectly predict the unknown, especially for tweets that are not even clear to human readers; therefore, flagging low-confidence predictions for human reviewers is an important step in correcting the model's behaviour. Since for each observation, BERT-type models output real logits - probabilities of the tweet being in each classes. The model then simply choose the class with the highest probability as the label for that tweet. This can lead to major problems, consider the two following two cases:
+
+- A tweet has 70% of being in Class 1 and 30% of being in Class 2. BERTweet will label it as Class 1, with relatively large confidence. This make sense.
+- A tweet has 50.01% of being in Class 1 and 49.99% of being in Class 2. BERTweet will still label it as Class 1 since 50.01 > 49.99. However, this does not make much sense since the model is only 50% sure about the 1st class - which is as good as a 50-50 random guess . Furthermore, the odds of the first-ranking class is not meaningfully higher than the second-ranking one. So labeling it as the 1st-class is misleading.
+
+To account for this problem, the model should flag predictions similar to the second case above where it is not so "confident" about which is the most likely class. To implement this, each predictions also return the 2nd most likely classes and not only the most likely one. It also return the probabilities of being in these 2 classes. Two kind of labels are then created for each predictions:
+
+1. Borderline Label: if the first-ranking class is close to the second-ranking class in terms of probabilities.
+2. Low-confidence Label: if the first-ranking class's probabilities is smaller than a certain threshold
+
+**Borderline Label:**
+6135	We are really sitting here on a water , sanitation and hygiene ticking bomb , ” - - @USER Secretary General @USER appeals for more immediate assistance for victims of #CycloneIdai in southern Africa .	requests_or_urgent_needs	requests_or_urgent_needs	0.372223	rescue_volunteering_or_donation_effort	0.371868
+7989	Hillary knows what to do . Will anyone listen ? Were paying for a bloated military , lets at least get victims some help ! #PuertoRicoRelief	other_relevant_information	not_humanitarian	0.390868	other_relevant_information	0.39006
+**Low-confidence Label:**
