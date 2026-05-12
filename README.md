@@ -3,26 +3,31 @@
 During humanitarian crises, social media platforms become critical communication channels; however, the sheer volume of posts makes it nearly impossible to manually identify which messages signal genuine emergencies. This project explores automated classification of disaster-related tweets across 10 humanitarian categories, ranging from rescue requests to infrastructure damage. The goal is to build a system that not only classifies tweets accurately but knows when it is uncertain: flagging ambiguous predictions for human review rather than forcing a confident answer.
 
 ### Datasets: 
-	- Source, authors
-	- Timeframe
-	- Size
-	- Features:
-	- Diversity?
-	- Categories
-	- Labeling process
-	- Reflecting Reality?
-- BERTweet (in 1 sentence): https://huggingface.co/vinai/bertweet-base
-	- Based on RoBERTA pre-training procedure
-	- Trained on 850M English Tweets from 2012-2019
-	- Suitable for tweet classification tasks that requires deeper sentence comprehension 
-## Exploratory data analysis:
+This project uses the Humaid dataset from ..., containing 42K labelled English tweets across 10 humanitarian categories: 
+	- Caution and advice
+	- Sympathy and support
+	- Requests or urgent needs
+	- Displaced people and evacuations
+	- Injured or dead people
+	- Missing or found people
+	- Infrastructure and utility damage
+	- Rescue, volunteering, or donation effort 
+	- Other relevant information
+	- Not humanitarian
+	
 The data is already splitted into train-test-validation sets by the authors. Their intention was for everyone to use a consistent split, making comparison between models of different people easier. The data split was well-balanced:
 <img width="531" height="390" alt="HumAID tweet classification with BERTweet-1777726212548" src="https://github.com/user-attachments/assets/2cc96fc8-d6c0-4f9a-83f3-10837f61178a" />
 There are only three columns: tweet_id, tweet_text, and the label of the tweet. While many features can be extracted from the tweet text, no feature engineering was done, as the main objective is implementing BERT which will only takes the raw text as input.
-
 #### Data Imbalances:
 The classes are well-stratified between the train, test, and validation set. However, there are some minority classes: "requests_or_urgent_needs", "not_humanitarian", "displaced_people_and_evacuations", "caution_and_advice", and "missing_or_found_people" being the most extreme - accounting for only ~0.5% of the dataset.
 <img width="989" height="490" alt="HumAID tweet classification with BERTweet-1777725892738" src="https://github.com/user-attachments/assets/4523f47c-328e-4f00-9e73-1b2f8d4a802b" />
+
+### BERTweet (in 1 sentence): https://huggingface.co/vinai/bertweet-base
+	- Based on RoBERTA pre-training procedure
+	- Trained on 850M English Tweets from 2012-2019
+	- Suitable for tweet classification tasks that requires deeper sentence comprehension 
+	
+
 ## Data Preprocessing:
 - For SVM and LR:
 	- Stripping stopwords and punctuations. Negation words ("no", "not") are kept
