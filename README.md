@@ -139,12 +139,17 @@ Two types of flags are introduced:
 
 Examples of low-confidence tweets:
 
-*insert table of low-confidence tweets*
+| Tweet                                                                                        | Actual Label               | 1st class                | 1st prob. |
+| -------------------------------------------------------------------------------------------- | -------------------------- | ------------------------ | --------: |
+|Greece fire : relatives of victims demand answers #Greece #news|other_relevant_information|other_relevant_information|0.270956| 
+|Poor show @USER . I thought you are a phone call away from @USER & bring assistance as you promised instead of this showboating & comic behaviour.Victims of #CycloneIdai need help not this . Shame|not_humanitarian|other_relevant_information|0.279923|
 
 ### Is flagging effective?
 The flags are effective if the non-flagged predictions are mostly correct and the flagged predictions are mostly wrong. 
 
+<img width="790" height="490" alt="download" src="https://github.com/user-attachments/assets/55629809-98b9-4701-89d6-a63921cdebf0" />
 
+<img width="790" height="490" alt="download" src="https://github.com/user-attachments/assets/5f972e46-227a-49c9-848a-2deaa9787a3e" />
 
 
 
