@@ -20,7 +20,7 @@ The data is already splitted into train-test-validation sets by the authors. The
 
 There are only three columns: tweet_id, tweet_text, and the label of the tweet. While many features can be extracted from the tweet text, no feature engineering was done, as the main objective is implementing BERT which will only takes the raw text as input.
 #### Data Imbalances:
-The classes are well-stratified between the train, test, and validation set. However, there are some minority classes: "requests_or_urgent_needs", "not_humanitarian", "displaced_people_and_evacuations", "caution_and_advice", and "missing_or_found_people" being the most extreme - accounting for only ~0.5% of the dataset.
+The classes are well-stratified between the train, test, and validation set. However, there are some minority classes, with "missing_or_found_people" being the most extreme minority - accounting for only ~0.5% of the dataset.
 <img width="989" height="490" alt="HumAID tweet classification with BERTweet-1777725892738" src="https://github.com/user-attachments/assets/4523f47c-328e-4f00-9e73-1b2f8d4a802b" />
 
 ### BERTweet: 
