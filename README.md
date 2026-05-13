@@ -1,6 +1,6 @@
 ##  Introduction
 ### Problem Inspiration:
-During humanitarian crises, social media platforms become critical communication channels; however, the sheer volume of posts makes it nearly impossible to manually identify which messages signal genuine emergencies. This project explores automated classification of disaster-related tweets across 10 humanitarian categories, ranging from rescue requests to infrastructure damage. The goal is to build a system that not only classifies tweets accurately but knows when it is uncertain: flagging ambiguous predictions for human review rather than forcing a confident answer.
+During humanitarian crises, social media platforms become critical communication channels; however, the sheer volume of posts makes it nearly impossible to manually identify which messages signal genuine emergencies. This project explores automated classification of disaster-related tweets across 10 categories, ranging from rescue requests to infrastructure damage. The goal is to build a system that not only classifies tweets accurately but knows when it is uncertain: flagging ambiguous predictions for human review rather than forcing a confident answer.
 
 ### Datasets: 
 This project uses the Humaid dataset from ..., containing 42K labelled English tweets across 10 humanitarian categories: 
@@ -14,19 +14,18 @@ This project uses the Humaid dataset from ..., containing 42K labelled English t
 	- Rescue, volunteering, or donation effort 
 	- Other relevant information
 	- Not humanitarian
-	
+The tweets span across 2016-2019 and 13 different major disasters.
+
 The data is already splitted into train-test-validation sets by the authors. Their intention was for everyone to use a consistent split, making comparison between models of different people easier. The data split was well-balanced:
 <img width="531" height="390" alt="HumAID tweet classification with BERTweet-1777726212548" src="https://github.com/user-attachments/assets/2cc96fc8-d6c0-4f9a-83f3-10837f61178a" />
+
 There are only three columns: tweet_id, tweet_text, and the label of the tweet. While many features can be extracted from the tweet text, no feature engineering was done, as the main objective is implementing BERT which will only takes the raw text as input.
 #### Data Imbalances:
 The classes are well-stratified between the train, test, and validation set. However, there are some minority classes: "requests_or_urgent_needs", "not_humanitarian", "displaced_people_and_evacuations", "caution_and_advice", and "missing_or_found_people" being the most extreme - accounting for only ~0.5% of the dataset.
 <img width="989" height="490" alt="HumAID tweet classification with BERTweet-1777725892738" src="https://github.com/user-attachments/assets/4523f47c-328e-4f00-9e73-1b2f8d4a802b" />
 
-### BERTweet (in 1 sentence): https://huggingface.co/vinai/bertweet-base
-	- Based on RoBERTA pre-training procedure
-	- Trained on 850M English Tweets from 2012-2019
-	- Suitable for tweet classification tasks that requires deeper sentence comprehension 
-	
+### BERTweet: 
+[BERTweet is the first large-scale language model](https://aclanthology.org/2020.emnlp-demos.2/) pretrained specifically on English tweets, trained on 850 million tweets spanning 2012 to 2019. Unlike generic BERT models pretrained on formal text like Wikipedia, BERTweet understands Twitter-specific language patterns including slang, informal abbreviations, and hashtags. This makes it a natural fit for disaster tweet classification, where the informal tweet language would disadvantage models pretrained on formal corpora."
 
 ## Data Preprocessing:
 - For SVM and LR:
@@ -114,18 +113,19 @@ No model perfectly predict the unknown, especially for tweets that are not even 
 - A tweet has 70% of being in Class 1 and 30% of being in Class 2. BERTweet will label it as Class 1, with relatively large confidence. This make sense.
 - A tweet has 50.01% of being in Class 1 and 49.99% of being in Class 2. BERTweet will still label it as Class 1 since 50.01 > 49.99. However, this does not make much sense since the model is only 50% sure about the 1st class - which is as good as a 50-50 random guess . Furthermore, the odds of the first-ranking class is not meaningfully higher than the second-ranking one. So labeling it as the 1st-class is misleading.
 
-To account for this problem, the model should flag predictions similar to the second case above where it is not so "confident" about which is the most likely class. To implement this, each predictions also return the 2nd most likely classes and not only the most likely one. It also return the probabilities of being in these 2 classes. Two kind of labels are then created for each predictions:
+To account for this problem, the model should flag predictions similar to the second case above where it is not so "confident" about which is the most likely class. To implement this, each predictions also return the 2nd most likely classes and not only the most likely one. It also return the probabilities of being in these 2 classes. Two kind of flags are then created for each predictions:
 
-1. Borderline Label: if the first-ranking class is close to the second-ranking class in terms of probabilities.
+1. Borderline Label: if the first-ranking class is close to the second-ranking class in terms of probabilities. Examples of borderline tweets:
 
 | Tweet | Actual Label | 1st class | 1st prob. | 2nd class | 2nd prob. |
 |---|---|---|---:|---|---:|
 |We are really sitting here on a water , sanitation and hygiene ticking bomb , ” - - @USER Secretary General @USER appeals for more immediate assistance for victims of #CycloneIdai in southern Africa | requests_or_urgent_needs | requests_or_urgent_needs | 0.372223 | rescue_volunteering_or_donation_effort | 0.371868 |
 |Hillary knows what to do . Will anyone listen ? Were paying for a bloated military , lets at least get victims some help ! #PuertoRicoRelief | other_relevant_information | not_humanitarian | 0.390868 | other_relevant_information | 0.390062 |
 
-3. Low-confidence Label: if the first-ranking class's probabilities is smaller than 0.7 (note)
+2. Low-confidence Label: if the first-ranking class's probabilities is smaller than 0.7 (note: after testing a range of values, the 0.7 threshold is chosen because it balances the number of tweets flagged and the accuracy of the non-flagged tweets). Examples of low-confidence tweets:
 
-**Borderline Label:**
-6135	We are really sitting here on a water , sanitation and hygiene ticking bomb , ” - - @USER Secretary General @USER appeals for more immediate assistance for victims of #CycloneIdai in southern Africa .	requests_or_urgent_needs	requests_or_urgent_needs	0.372223	rescue_volunteering_or_donation_effort	0.371868
-7989	Hillary knows what to do . Will anyone listen ? Were paying for a bloated military , lets at least get victims some help ! #PuertoRicoRelief	other_relevant_information	not_humanitarian	0.390868	other_relevant_information	0.39006
-**Low-confidence Label:**
+
+
+
+
+
