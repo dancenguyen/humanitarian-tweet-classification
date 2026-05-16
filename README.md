@@ -27,7 +27,7 @@ The classes are well-stratified between the train, test, and validation set. How
 [BERTweet is the first large-scale language model](https://aclanthology.org/2020.emnlp-demos.2/) pretrained specifically on English tweets, trained on 850 million tweets spanning 2012 to 2019. Unlike generic BERT models pretrained on formal text like Wikipedia, BERTweet understands Twitter-specific language patterns including slang, informal abbreviations, and hashtags. This makes it a natural fit for disaster tweet classification, where the informal tweet language would disadvantage models pretrained on formal corpora."
 
 ## Data Preprocessing:
-- For SVM and LR:
+- For SVM and Logistic Regression:
 	- Stripping stopwords, punctuations, and hashtag symbol. Negation words ("no", "not") are kept
 	- TF-IDF with parameters: ngram_range= (1, 2), sublinear_tf= True
 - For BERTweet:
@@ -48,7 +48,7 @@ The misclassifications of the two models are then examined manually, revealing t
 SVM did a slightly better job than LR in terms of macro f1-score, and LR performed worse for the minority class "missing_or_found_people". However, both models performed poorly for 4 classes: "caution_and_advice", "not_humanitarian", "other_relevant_information", "requests_or_urgent_needs"
 
 ### Detailed Error Analysis for SVM
-Since SVM has better overall performance, deeper analyses are only done on SVM and not on Logistic Regression. 
+Since SVM has better overall performance, error analyses are only done on SVM and not on Logistic Regression. 
 
 **Confusion Matrix**
 <img width="1059" height="963" alt="HumAID tweet classification with BERTweet-1777727543912" src="https://github.com/user-attachments/assets/d66e13fb-0cf4-4f47-8da4-6e11c390011f" />
@@ -57,7 +57,8 @@ Since SVM has better overall performance, deeper analyses are only done on SVM a
 - "**other_relevant_information**" is mainly misclassified as "**rescue_volunteering_or_donation_effort**", "**infrastructure_and_utility_damage**", and "**caution_and_advice**". 
 
 **Manually inspecting the errors**:
-Upon manual inspection of the most commonly misclassified classes, I saw one important pattern: these classes are ambiguous by definition and contain information about other classes. 
+Upon manual inspection of the most commonly misclassified classes, we can see one important pattern : these classes are ambiguous by definition and contain information about other
+ classes. 
 - "other_relevant_information" can contains anything related to humanitarian.
 - "caution_and_advice" and "requests_or_urgent_needs" normally include information about the disasters such as casualties, infrastructure damage, etc.
 
@@ -78,7 +79,10 @@ The TF-IDF vectorizer does not "understand" the entire sentence, it strips indiv
 	- Batch size 32 for training efficiency on T4 GPU.
    
 ### Result: 
-BERTweet achieved a validation Macro F1-score of 0.7625 and a test Macro F1-score of 0.7636. The similar validation and test performance suggests limited overfitting.
+
+<img width="576" height="455" alt="download" src="https://github.com/user-attachments/assets/a36cfcdb-0522-4751-af18-2f8dc4286237" />
+
+Peaking at epoch 3, BERTweet achieved a validation Macro F1-score of 0.7625 and a test Macro F1-score of 0.7636. The similar validation and test performance suggests limited overfitting.
 
 Compared to the SVM baseline (Macro F1 = 0.69), BERTweet achieved an improvement of approximately 10.7%.
 
@@ -126,10 +130,10 @@ Two types of flags are introduced:
 
 **1. Borderline Flag: if the first-ranking class is close to the second-ranking class in terms of probabilities. Examples of borderline tweets:**
 
-| Tweet                                                                                        | Actual Label               | 1st class                | 1st prob. | 2nd class                              | 2nd prob. |
-| -------------------------------------------------------------------------------------------- | -------------------------- | ------------------------ | --------: | -------------------------------------- | --------: |
+| Tweet                                                                                                                                                                                                                  | Actual Label               | 1st class                | 1st prob. | 2nd class                              | 2nd prob. |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------ | --------: | -------------------------------------- | --------: |
 | We are really sitting here on a water , sanitation and hygiene ticking bomb , ” - - @USER Secretary General @USER appeals for more immediate assistance for victims of #CycloneIdai in southern Africa .	 #CycloneIdai | requests_or_urgent_needs   | requests_or_urgent_needs |  0.372223 | rescue_volunteering_or_donation_effort |  0.371868 |
-| Hillary knows what to do . Will anyone listen ? Were paying for a bloated military , lets at least get victims some help ! #PuertoRicoRelief                                               | other_relevant_information | not_humanitarian         |  0.390868 | other_relevant_information             |  0.390062 |
+| Hillary knows what to do . Will anyone listen ? Were paying for a bloated military , lets at least get victims some help ! #PuertoRicoRelief                                                                           | other_relevant_information | not_humanitarian         |  0.390868 | other_relevant_information             |  0.390062 |
 
 
 **2. Low-confidence Flag:** if the highest class probability is below 0.7. After testing multiple thresholds, 0.7 was selected as a balance between:
@@ -139,10 +143,10 @@ Two types of flags are introduced:
 
 Examples of low-confidence tweets:
 
-| Tweet                                                                                        | Actual Label               | 1st class                | 1st prob. |
-| -------------------------------------------------------------------------------------------- | -------------------------- | ------------------------ | --------: |
-|Greece fire : relatives of victims demand answers #Greece #news|other_relevant_information|other_relevant_information|0.270956| 
-|Poor show @USER . I thought you are a phone call away from @USER & bring assistance as you promised instead of this showboating & comic behaviour.Victims of #CycloneIdai need help not this . Shame|not_humanitarian|other_relevant_information|0.279923|
+| Tweet                                                                                                                                                                                                | Actual Label               | 1st class                  | 1st prob. |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | -------------------------- | --------: |
+| Greece fire : relatives of victims demand answers #Greece #news                                                                                                                                      | other_relevant_information | other_relevant_information |  0.270956 |
+| Poor show @USER . I thought you are a phone call away from @USER & bring assistance as you promised instead of this showboating & comic behaviour.Victims of #CycloneIdai need help not this . Shame | not_humanitarian           | other_relevant_information |  0.279923 |
 
 ### Is flagging effective?
 The flags are effective if the non-flagged predictions are mostly correct and the flagged predictions are mostly wrong. 
