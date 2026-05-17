@@ -4,25 +4,26 @@ During humanitarian crises, social media platforms become critical communication
 
 ### Datasets: 
 This project uses the [HumAID](https://arxiv.org/abs/2104.03090) dataset, the tweets span across 2016-2019 and 13 different major disasters, containing 42K labelled English tweets of 10 classes: 
-	- Caution and advice
-	- Sympathy and support
-	- Requests or urgent needs
-	- Displaced people and evacuations
-	- Injured or dead people
-	- Missing or found people
-	- Infrastructure and utility damage
-	- Rescue, volunteering, or donation effort 
-	- Other relevant information
-	- Not humanitarian
 
-The data is already splitted into train-test-validation sets by the authors. Their intention was for everyone to use a consistent split, making comparison between models of different people easier. The data split was well-balanced:
+- Caution and advice
+- Sympathy and support
+- Requests or urgent needs
+- Displaced people and evacuations
+- Injured or dead people
+- Missing or found people
+- Infrastructure and utility damage
+- Rescue, volunteering, or donation effort 
+- Other relevant information
+- Not humanitarian
+
+The data was already split into train-test-validation sets by the authors. Their intention was for everyone to use a consistent split, making comparison between models of different people easier. The data split was well-balanced:
 <img width="531" height="390" alt="HumAID tweet classification with BERTweet-1777726212548" src="https://github.com/user-attachments/assets/2cc96fc8-d6c0-4f9a-83f3-10837f61178a" />
 
 
 <img width="989" height="490" alt="HumAID tweet classification with BERTweet-1777725892738" src="https://github.com/user-attachments/assets/4523f47c-328e-4f00-9e73-1b2f8d4a802b" />
-The classes are well-stratified between the train, test, and validation set. However, there are some minority classes, with "missing_or_found_people" being the most extreme minority - accounting for only ~0.5% of the dataset.
+The classes are well-stratified between the train, test, and validation set. However, there are some minority classes, with "missing or found people" being the most extreme minority - accounting for only ~0.5% of the dataset.
 
-Each observations only have three features: tweet_id, tweet_text, and the label of the tweet. While many features can be extracted from the tweet text, no feature engineering was done, as the main objective is implementing BERT which will only takes the raw text as input.
+Each observations has three features: tweet_id, tweet_text, and the label of the tweet. While many features can be extracted from the tweet text, no feature engineering was done, as the main objective is implementing BERT which will only takes the raw text as input.
 
 ### BERTweet: 
 [BERTweet is the first large-scale language model](https://aclanthology.org/2020.emnlp-demos.2/) pretrained specifically on English tweets, trained on 850 million tweets spanning 2012 to 2019. Unlike generic BERT models pretrained on formal text like Wikipedia, BERTweet understands Twitter-specific language patterns including slang, informal abbreviations, and hashtags. This makes it a natural fit for disaster tweet classification, where the informal tweet language would disadvantage models pretrained on formal corpora."
@@ -34,16 +35,16 @@ Each observations only have three features: tweet_id, tweet_text, and the label 
 	- Stripping stopwords, punctuations, and hashtag symbol. Negation words ("no", "not") are kept
 	- TF-IDF with parameters: ngram_range= (1, 2), sublinear_tf= True
 - For BERTweet:
-	- The text are normalised using [BERTweet's normalizer](https://github.com/VinAIResearch/BERTweet#-normalize-raw-input-tweets). This makes the texts consistent with BERTweet's tokenization. These changes are purely syntactic and preserve all original meanings. For example: "cannot" into "can not", and "…" into "..."
+	- The text are normalised using [BERTweet's normalizer](https://github.com/VinAIResearch/BERTweet#-normalize-raw-input-tweets). This makes the texts consistent with BERTweet's tokenization. For example: "cannot" into "can not", and "…" into "..."
 ## Evaluation metrics: 
 Macro f1-score was used as the main evaluation metrics as we have 10 different classes with extreme class imbalance. For underperforming classes, their individual f1-score are examined more closely. 
 ## Baseline modelling:
-First, two linear models are used as the baseline:
- **Logistic regressions:** 
-- Suitable for multiclass classification
- **Linear Support Vector Machine:**
-- Suitable for multiclass classification
-- (Vectorized) Text data is sparse, tree models won't perform well
+Two linear models are used as baseline:
+
+- **Logistic regressions** 
+- **Linear Support Vector Machine**
+- Tree models such as XGBoost are not used because their low-incompatibility with sparse text data.
+
 The misclassifications of the two models are then examined manually, revealing their weaknesses which will be the motivation for using BERTweet in the next part.
 ### Result
 
@@ -84,16 +85,13 @@ The TF-IDF vectorizer does not "understand" the entire sentence, it strips indiv
    
 ### Result: 
 
+BERTweet peaked at epoch 3, with epoch 4 showing slight overfitting on the validation set. It achieved a validation Macro F1-score of 0.7625 (Epoch 3) and a test Macro F1-score of 0.7636. The similar validation and test performance suggests limited overfitting.
+
 <img width="576" height="455" alt="download" src="https://github.com/user-attachments/assets/a36cfcdb-0522-4751-af18-2f8dc4286237" />
 
-Peaking at epoch 3, BERTweet achieved a validation Macro F1-score of 0.7625 and a test Macro F1-score of 0.7636. The similar validation and test performance suggests limited overfitting.
-
-Compared to the SVM baseline (Macro F1 = 0.69), BERTweet achieved an improvement of approximately 10.7%.
+Compared to the SVM baseline (Macro F1 = 0.69), **BERTweet achieved an improvement of approximately 10.7%.** Furthermore, **BERTweet outperformed the SVM model across all individual classes:**
 
 <img width="490" height="390" alt="download" src="https://github.com/user-attachments/assets/c9e6f6f4-948a-4c5b-9bcc-55383a528351" />
-
-Furthermore, BERTweet outperformed the SVM model across all individual classes:
-
 <img width="785" height="490" alt="download" src="https://github.com/user-attachments/assets/f2ee0c9e-115e-4852-8de4-03a09fc4dba4" />
 
 1. **"Not_humanitarian"** remained the weakest-performing class, although its F1-score nearly doubled relative to SVM.
@@ -101,10 +99,17 @@ Furthermore, BERTweet outperformed the SVM model across all individual classes:
 3. **"Requests_or_urgent_needs", and "Caution_and_advice"** improved by roughly 15%
 4. **"Other_relevant_information"** showed only marginal improvement, signifying a data problem rather than a modelling problem: the class is highly broad and semantically ambiguous.
 
-Finally, BERTweet also outperformed BERT, RoBERTa, and DistilBERT reported in the original dataset paper in terms of Weighted F1-score. Macro F1-score is not compared since the paper did not report this score. This result suggests that BERTweet excels at tweet classification compared to traditional BERT models which are trained on more formal corpora.
+The consistent improvement across all classes suggests that BERTweet's gains are not driven by a single well-performing class but reflect a genuine improvement in the model's ability to understand tweet language. The one exception — "other_relevant_information" — is telling: it is the only class where switching from a bag-of-words model to a contextual one produced negligible gains, suggesting the bottleneck is label ambiguity rather than model capability. No amount of modelling improvement can reliably learn a class whose boundary is undefined by design.
+
+### BERTweet performance compared to other models in the BERT family:
 
 <img width="689" height="390" alt="download" src="https://github.com/user-attachments/assets/6dccc85d-3770-47c4-abc9-c194ee71b2c9" />
 
+BERTweet was benchmarked against BERT, RoBERTa, and DistilBERT results reported in the original HumAID paper. BERTweet outperformed all three models in terms of Weighted F1-score, as shown in the bar chart above. Macro F1-score is not compared since the paper did not report this metric.
+
+This result is best understood in light of BERTweet's architecture: it follows RoBERTa's pretraining procedure but applies it to 850 million tweets rather than formal text. This means BERTweet combines RoBERTa's stronger pretraining methodology with domain-specific knowledge of Twitter language. Beating vanilla RoBERTa here therefore reflects the advantage of domain-matched pretraining data — RoBERTa's superior architecture alone is not sufficient to compensate for the mismatch between its formal pretraining corpus and the informal nature of tweets.
+
+This reinforces a broader point about model selection: for domain-specific tasks, a model pretrained on in-domain data is likely to outperform a more powerful general-purpose model trained on out-of-domain text.
 
 ### **Error Analysis**:  Four classes with the most misclassification:
 
