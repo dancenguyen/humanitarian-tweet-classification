@@ -46,7 +46,7 @@ Two linear models are used as baseline:
 
 - **Logistic regressions** 
 - **Linear Support Vector Machine**
-- Tree models such as XGBoost are not used because their low-incompatibility with sparse text data.
+- Tree models such as XGBoost are not used because of their low-incompatibility with sparse text data.
 
 The misclassifications of the two models are then examined manually, revealing their weaknesses which will be the motivation for using BERTweet in the next part.
 ### Result
