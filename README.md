@@ -183,7 +183,7 @@ Furthermore, the 86.5% accuracy of high-confidence predictions exceeds the basel
 
 
 ## Conclusion:
-ERTweet achieved strong classification performance across 10 humanitarian categories, with consistent improvements over linear baselines in every class. Error analysis revealed that the remaining misclassifications are concentrated in semantically ambiguous classes — particularly "other_relevant_information" and "not_humanitarian" — whose broad catch-all definitions make them difficult to learn reliably regardless of model choice. This suggests the performance ceiling for this dataset is partly a data labelling problem rather than a modelling one.
+BERTweet achieved strong classification performance across 10 humanitarian categories, with consistent improvements over linear baselines in every class. Error analysis revealed that the remaining misclassifications are concentrated in semantically ambiguous classes — particularly "other_relevant_information" and "not_humanitarian" — whose broad catch-all definitions make them difficult to learn reliably regardless of model choice. This suggests the performance ceiling for this dataset is partly a data labelling problem rather than a modelling one.
 
 The confidence flagging system demonstrated that model uncertainty is a meaningful and measurable signal: high-confidence predictions achieved 86.5% accuracy compared to 52.4% for low-confidence ones, a gap large enough to justify routing uncertain predictions to human review in a production setting.
 
