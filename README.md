@@ -18,13 +18,16 @@ This project uses the [HumAID](https://arxiv.org/abs/2104.03090) dataset, the tw
 The data is already splitted into train-test-validation sets by the authors. Their intention was for everyone to use a consistent split, making comparison between models of different people easier. The data split was well-balanced:
 <img width="531" height="390" alt="HumAID tweet classification with BERTweet-1777726212548" src="https://github.com/user-attachments/assets/2cc96fc8-d6c0-4f9a-83f3-10837f61178a" />
 
-There are only three columns: tweet_id, tweet_text, and the label of the tweet. While many features can be extracted from the tweet text, no feature engineering was done, as the main objective is implementing BERT which will only takes the raw text as input.
-#### Data Imbalances:
-The classes are well-stratified between the train, test, and validation set. However, there are some minority classes, with "missing_or_found_people" being the most extreme minority - accounting for only ~0.5% of the dataset.
+
 <img width="989" height="490" alt="HumAID tweet classification with BERTweet-1777725892738" src="https://github.com/user-attachments/assets/4523f47c-328e-4f00-9e73-1b2f8d4a802b" />
+The classes are well-stratified between the train, test, and validation set. However, there are some minority classes, with "missing_or_found_people" being the most extreme minority - accounting for only ~0.5% of the dataset.
+
+Each observations only have three features: tweet_id, tweet_text, and the label of the tweet. While many features can be extracted from the tweet text, no feature engineering was done, as the main objective is implementing BERT which will only takes the raw text as input.
 
 ### BERTweet: 
 [BERTweet is the first large-scale language model](https://aclanthology.org/2020.emnlp-demos.2/) pretrained specifically on English tweets, trained on 850 million tweets spanning 2012 to 2019. Unlike generic BERT models pretrained on formal text like Wikipedia, BERTweet understands Twitter-specific language patterns including slang, informal abbreviations, and hashtags. This makes it a natural fit for disaster tweet classification, where the informal tweet language would disadvantage models pretrained on formal corpora."
+
+
 
 ## Data Preprocessing:
 - For SVM and Logistic Regression:
@@ -43,8 +46,10 @@ First, two linear models are used as the baseline:
 - (Vectorized) Text data is sparse, tree models won't perform well
 The misclassifications of the two models are then examined manually, revealing their weaknesses which will be the motivation for using BERTweet in the next part.
 ### Result
+
 <img width="489" height="390" alt="download" src="https://github.com/user-attachments/assets/cf10c6f8-4eb4-439d-a171-8c7b35e1ba8f" />
 <img width="785" height="490" alt="download" src="https://github.com/user-attachments/assets/a0eff745-8761-458a-b450-eaf7cd4b88f8" />
+
 SVM did a slightly better job than LR in terms of macro f1-score, and LR performed worse for the minority class "missing_or_found_people". However, both models performed poorly for 4 classes: "caution_and_advice", "not_humanitarian", "other_relevant_information", "requests_or_urgent_needs"
 
 ### Detailed Error Analysis for SVM
@@ -57,14 +62,13 @@ Since SVM has better overall performance, error analyses are only done on SVM an
 - "**other_relevant_information**" is mainly misclassified as "**rescue_volunteering_or_donation_effort**", "**infrastructure_and_utility_damage**", and "**caution_and_advice**". 
 
 **Manually inspecting the errors**:
-Upon manual inspection of the most commonly misclassified classes, we can see one important pattern : these classes are ambiguous by definition and contain information about other
- classes. 
+Upon manual inspection of the most commonly misclassified classes, we can see one important pattern : these classes are ambiguous by definition and contain information about other classes. 
 - "other_relevant_information" can contains anything related to humanitarian.
 - "caution_and_advice" and "requests_or_urgent_needs" normally include information about the disasters such as casualties, infrastructure damage, etc.
 
-Such information confuses the classifier. For example, a misclassified "other_relevant_information" tweet is: "rural area small villages roads challenges rescue workers face amatrice" (filler words removed). It was misclassified as rescue efforts which make sense since it contain keywords about rescue workers. 
+Such information confuses the classifier. Take this misclassified tweet as an example: "rural area small villages roads challenges rescue workers face amatrice" (filler words removed). It was misclassified as "rescue efforts" since it contain keywords about rescue workers, yet the true label is "other relevant information"
 
-The TF-IDF vectorizer does not "understand" the entire sentence, it strips individual words from their context and count how many times they appeared. Furthermore, the preprocessing may have removed important filler words, the above sentence can be read very differently if the filler words were not removed. Therefore, using BERTweet may improve performance due to its context comprehension and minimal pre-processing required. 
+The TF-IDF vectorizer does not "understand" the entire sentence, it strips individual words from their context and count how many times they appeared. Furthermore, the preprocessing may have removed important filler words, the above sentence can be read very differently if the filler words were not removed. Therefore, using BERTweet is likely to improve performance thanks to its context comprehension and minimal required pre-processing.
 
 ## BERTweet Implementation:
 - Model: BERTweet from Hugging Face
@@ -86,9 +90,9 @@ Peaking at epoch 3, BERTweet achieved a validation Macro F1-score of 0.7625 and 
 
 Compared to the SVM baseline (Macro F1 = 0.69), BERTweet achieved an improvement of approximately 10.7%.
 
-*Insert graph comparing the F1 Score*
+<img width="490" height="390" alt="download" src="https://github.com/user-attachments/assets/c9e6f6f4-948a-4c5b-9bcc-55383a528351" />
 
-BERTweet outperformed the SVM model across all individual classes:
+Furthermore, BERTweet outperformed the SVM model across all individual classes:
 
 <img width="785" height="490" alt="download" src="https://github.com/user-attachments/assets/f2ee0c9e-115e-4852-8de4-03a09fc4dba4" />
 
@@ -97,7 +101,10 @@ BERTweet outperformed the SVM model across all individual classes:
 3. **"Requests_or_urgent_needs", and "Caution_and_advice"** improved by roughly 15%
 4. **"Other_relevant_information"** showed only marginal improvement, signifying a data problem rather than a modelling problem: the class is highly broad and semantically ambiguous.
 
-BERTweet also outperformed BERT, RoBERTa, and DistilBERT reported in the original dataset paper in terms of Weighted F1-score. Macro F1-score is not compared since the paper did not report this score.
+Finally, BERTweet also outperformed BERT, RoBERTa, and DistilBERT reported in the original dataset paper in terms of Weighted F1-score. Macro F1-score is not compared since the paper did not report this score. This result suggests that BERTweet excels at tweet classification compared to traditional BERT models which are trained on more formal corpora.
+
+<img width="689" height="390" alt="download" src="https://github.com/user-attachments/assets/6dccc85d-3770-47c4-abc9-c194ee71b2c9" />
+
 
 ### **Error Analysis**:  Four classes with the most misclassification:
 
@@ -149,11 +156,10 @@ Examples of low-confidence tweets:
 | Poor show @USER . I thought you are a phone call away from @USER & bring assistance as you promised instead of this showboating & comic behaviour.Victims of #CycloneIdai need help not this . Shame | not_humanitarian           | other_relevant_information |  0.279923 |
 
 ### How many predictions are flagged?
-The following figure shows how many percent of the predictions are flagged as either Low-confidence or Borderline:
+Only 3.6% of the predictions are flagged as Borderline compared to 19.3% for Low-confidence:
 
 <img width="1330" height="719" alt="download" src="https://github.com/user-attachments/assets/5fe07d3b-2d5f-4dab-b2a0-a927965d456b" />
 
-Only 3.6% of the predictions are flagged as Borderline compared to 19.3% for Low-confidence. 
 
 ### Is flagging effective?
 The flags are effective if the non-flagged predictions are mostly accurate and the flagged predictions are mostly inaccurate. The following two figures illustrate the accuracy of each flag:
