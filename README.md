@@ -148,15 +148,28 @@ Examples of low-confidence tweets:
 | Greece fire : relatives of victims demand answers #Greece #news                                                                                                                                      | other_relevant_information | other_relevant_information |  0.270956 |
 | Poor show @USER . I thought you are a phone call away from @USER & bring assistance as you promised instead of this showboating & comic behaviour.Victims of #CycloneIdai need help not this . Shame | not_humanitarian           | other_relevant_information |  0.279923 |
 
+### How many predictions are flagged?
+The following figure shows how many percent of the predictions are flagged as either Low-confidence or Borderline:
+
+<img width="1330" height="719" alt="download" src="https://github.com/user-attachments/assets/5fe07d3b-2d5f-4dab-b2a0-a927965d456b" />
+
+Only 3.6% of the predictions are flagged as Borderline compared to 19.3% for Low-confidence. 
+
 ### Is flagging effective?
-The flags are effective if the non-flagged predictions are mostly correct and the flagged predictions are mostly wrong. 
+The flags are effective if the non-flagged predictions are mostly accurate and the flagged predictions are mostly inaccurate. The following two figures illustrate the accuracy of each flag:
 
 <img width="790" height="490" alt="download" src="https://github.com/user-attachments/assets/55629809-98b9-4701-89d6-a63921cdebf0" />
-
 <img width="790" height="490" alt="download" src="https://github.com/user-attachments/assets/5f972e46-227a-49c9-848a-2deaa9787a3e" />
 
+The stacked bar chart confirms that the Low-confidence flag is a meaningful indicator of prediction quality: high-confidence predictions achieved 86.5% accuracy, compared to 52.4% for low-confidence predictions, a gap of 34 percentage points. Similarly, the Borderline flag produced an accuracy gap of the same magnitude, with 80.0% accuracy for non-borderline predictions versus 46.0% for borderline predictions.
+
+This suggests that borderline predictions are more likely to be incorrect than low-confidence predictions, indicating stronger filtering of erroneous tweets. However, the Borderline flag identified only 311 tweets, compared to 1,660 flagged as low-confidence. As a result, despite being more selective, the Borderline flag captures fewer incorrect predictions overall. Therefore, the Low-confidence flag is preferable for human review.
+
+Furthermore, the 86.5% accuracy of high-confidence predictions exceeds the baseline test-set accuracy of 79.9%, suggesting that routing low-confidence predictions to human review instead of automated classification could meaningfully reduce errors in a production setting.
 
 
+## Conclusion:
+...
 
 
 
