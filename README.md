@@ -88,7 +88,7 @@ The TF-IDF vectorizer does not "understand" the entire sentence, it strips indiv
    
 ### Result: 
 
-BERTweet peaked at epoch 3, with epoch 4 showing slight overfitting on the validation set. It achieved a validation Macro F1-score of 0.7625 (Epoch 3) and a test Macro F1-score of 0.7636. The similar validation and test performance suggests limited overfitting.
+BERTweet peaked at epoch 4. It achieved a validation Macro F1-score of 0.7625 and a test Macro F1-score of 0.7636. The similar validation and test performance suggests limited overfitting.
 
 <img width="576" height="455" alt="download" src="https://github.com/user-attachments/assets/a36cfcdb-0522-4751-af18-2f8dc4286237" />
 
