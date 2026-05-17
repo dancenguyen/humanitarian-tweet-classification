@@ -1,3 +1,6 @@
+## Abstract
+This project implements an end-to-end tweet classification pipeline for humanitarian disaster response, using the HumAID dataset of 42K labelled English tweets across 10 categories. Starting from TF-IDF with linear baselines, the project progresses to fine-tuning BERTweet - a RoBERTa-based model pretrained on 850 million tweets - **achieving a Macro F1-score of 0.7636**, a 10.7% improvement over the SVM baseline and **outperforming BERT, RoBERTa, and DistilBERT** reported in the original dataset paper. Beyond aggregate metrics, **the project includes systematic error analysis, label ambiguity diagnosis, and a confidence-based flagging system** that routes uncertain predictions to human review, reflecting a production-oriented approach rather than purely optimising a benchmark score.
+
 ##  Introduction
 ### Problem Inspiration:
 During humanitarian crises, social media platforms become critical communication channels; however, the sheer volume of posts makes it nearly impossible to manually identify which messages signal genuine emergencies. This project explores automated classification of disaster-related tweets across 10 categories, ranging from rescue requests to infrastructure damage. The goal is to build a system that not only classifies tweets accurately but knows when it is uncertain: flagging ambiguous predictions for human review rather than forcing a confident answer.
@@ -77,7 +80,7 @@ The TF-IDF vectorizer does not "understand" the entire sentence, it strips indiv
 - Hardware: 2× NVIDIA T4 GPUs on Kaggle
 - Maximum sequence length: 128 tokens (sufficient for tweet-length inputs)
 - Evaluation metric: Macro F1-score
-- **Training configuration: **
+- **Training configuration:**
 	- 4 epochs with early stopping on validation F1
 	- Learning rate 2e-5 (conservative to preserve pretrained weights)
 	- Warmup over 10% of steps to stabilise early training
@@ -180,7 +183,11 @@ Furthermore, the 86.5% accuracy of high-confidence predictions exceeds the basel
 
 
 ## Conclusion:
-...
+ERTweet achieved strong classification performance across 10 humanitarian categories, with consistent improvements over linear baselines in every class. Error analysis revealed that the remaining misclassifications are concentrated in semantically ambiguous classes — particularly "other_relevant_information" and "not_humanitarian" — whose broad catch-all definitions make them difficult to learn reliably regardless of model choice. This suggests the performance ceiling for this dataset is partly a data labelling problem rather than a modelling one.
+
+The confidence flagging system demonstrated that model uncertainty is a meaningful and measurable signal: high-confidence predictions achieved 86.5% accuracy compared to 52.4% for low-confidence ones, a gap large enough to justify routing uncertain predictions to human review in a production setting.
+
+Several directions remain for future work. First, applying BERTweet's recommended tweet normalisation preprocessing may yield incremental performance gains by better aligning input text with the model's pretraining distribution. Second, the ambiguous classes could benefit from label refinement — either merging semantically overlapping categories or collecting higher-quality annotations with explicit inter-annotator agreement measurement. Third, exploring larger variants such as BERTweet-large may improve performance further, particularly on minority classes where the base model still struggles.
 
 
 
